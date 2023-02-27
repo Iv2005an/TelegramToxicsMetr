@@ -73,14 +73,14 @@ def delete_words(delete_words):
                 bot.send_message(delete_words.chat.id, f'Слова:\n{remove_mat}\nуспешно удалены.')
 
 
-@bot.message_handler(chat_types=['group'], content_types=['text'])
+@bot.message_handler(chat_types=['group', 'supergroup', 'channel'], content_types=['text'])
 def text_handler(message):
     # print('text')
     if message.forward_from is None:
         check_mat(message, message.text)
 
 
-@bot.message_handler(chat_types=['group'], content_types=['photo'])
+@bot.message_handler(chat_types=['group', 'supergroup', 'channel'], content_types=['photo'])
 def photo_handler(photo):
     # print('photo')
     if photo.forward_from is None:

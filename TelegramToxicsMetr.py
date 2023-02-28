@@ -76,19 +76,17 @@ def delete_words(delete_words):
 @bot.message_handler(chat_types=['group', 'supergroup', 'channel'], content_types=['text'])
 def text_handler(message):
     # print('text')
-    if message.forward_from is None:
-        check_mat(message, message.text)
+    check_mat(message, message.text)
 
 
 @bot.message_handler(chat_types=['group', 'supergroup', 'channel'], content_types=['photo'])
-def photo_handler(photo):
+def photo_handler(message):
     # print('photo')
-    if photo.forward_from is None:
-        check_mat(photo, photo.caption)
+    check_mat(message, message.caption)
 
 
 def check_mat(message, text):
-    if text != '':
+    if message.forward_from is None and (message.text is not None or message.caption is not None) and text != '':
         text = text.replace('\n', ' ')
         text = text.translate(str.maketrans('', '', string.punctuation))
         text = text.translate(str.maketrans('', '', string.digits))
@@ -127,10 +125,24 @@ def update_chat_description(message, cur):
     WHERE ChatID={message.chat.id}
     ORDER BY ToxicMetr DESC
     """).fetchall()
-    new_chat_description = 'Топ токсиков в этом чате:\n'
+    new_chat_description = 'Топ токсиков в этом чате(кол-во оскорблений):\n'
     for i, member in enumerate(chat_members):
-        new_chat_description += f'{i + 1}. {bot.get_chat_member(member[0], member[1]).user.username} - {member[2]}' \
-                                f'раз. повёл себя не культурно;\n'
+        toxic = bot.get_chat_member(member[0], member[1]).user.username
+        if toxic is not None:
+            toxic = f'@{toxic}'
+        elif toxic is None:
+            toxic_f_name = bot.get_chat_member(member[0], member[1]).user.first_name
+            toxic_l_name = bot.get_chat_member(member[0], member[1]).user.last_name
+            toxic = ''
+            if toxic_f_name is not None:
+                toxic += toxic_f_name
+            if toxic_l_name is not None:
+                toxic += toxic_l_name
+        toxic_info = f'{i + 1}. {toxic} - {member[2]};\n'
+        if len(new_chat_description + toxic_info) < 255:
+            new_chat_description += toxic_info
+        else:
+            break
     new_chat_description = new_chat_description[:-1]
     if chat_description != new_chat_description:
         try:

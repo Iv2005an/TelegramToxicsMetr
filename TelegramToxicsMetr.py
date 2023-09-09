@@ -2,6 +2,7 @@ import string
 
 import telebot
 from config import token
+from config import admin_id
 import sqlite3
 from mat import mat
 
@@ -19,10 +20,24 @@ with sqlite3.connect("Toxics.db") as db:
     db.commit()
 
 
+@bot.message_handler(commands=['get_db'])
+def get_words(message_info):
+    if message_info.from_user.id == admin_id:
+        with open("Toxics.db", "rb") as file:
+            bot.send_document(message_info.chat.id, file)
+
+
+@bot.message_handler(commands=['get_sw'])
+def get_words(message_info):
+    if message_info.from_user.id == admin_id:
+        with open("mat.py", "rb") as file:
+            bot.send_document(message_info.chat.id, file)
+
+
 @bot.message_handler(commands=['add'])
 def add_words(add_words):
     global mat_words
-    if add_words.from_user.id == 790804074:
+    if add_words.from_user.id == admin_id:
         # print('add')
         text = add_words.text[5:]
         if text != '':
